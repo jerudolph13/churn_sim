@@ -1,4 +1,4 @@
-This repository contains code for the paper "Sampling for computational efficiency when conducting analyses in big data," In Press at the _Epidemiology_ We also include the bash scripts used to run the R programs.
+This repository contains code for the paper "Sampling for computational efficiency when conducting analyses in big data," In Press at the _Epidemiology_.
  
 
 CODE DESCRIPTION
