@@ -4,9 +4,9 @@ for (package in packages){
   suppressPackageStartupMessages(library(package, character.only=T, quietly=T)) 
 }
 
-nsim <- 500
+nsim <- 1000
 
-for (model in c("dag1", "dag2.1", "dag2.2", "dag2.3", "dag2.4")) {
+for (model in c("dag4.1")) { #"dag2.2", "dag2.3", "dag2.4"
 for (outcome in c("transient", "permanent", "repeated")) {
 
 
@@ -24,7 +24,7 @@ dat <- read_csv(paste0("../data/", model, "_", outcome, ".csv"))
 
 rep.res <- function(r) {
 
-  dat.r <- filter(dat, rep==r)
+  dat.r <- filter(dat, sim_rep==r)
   
   # True natural course
   true.dat <- dat.r %>% 
@@ -121,6 +121,8 @@ rep.res <- function(r) {
 all.res <- lapply(1:nsim, function(x){rep.res(x)})
 all.res <- bind_rows(all.res)
 
+write.csv(all.res, paste0("../results/", model, "_", outcome, "_rate_all.csv"))
+
 summ.res <- all.res %>% 
   group_by(t) %>% 
   summarize(across(!rep, list(avg = ~mean(.x, na.rm=T), sd = ~sd(.x, na.rm=T)))) %>% 
@@ -135,7 +137,7 @@ summ.res <- all.res %>%
          bias_rate_gap_1t = rate_gap2_avg - rate_truth_avg) %>% 
   ungroup()
 
-write.csv(summ.res, paste0("../results/", model, "_", outcome, "_rate.csv"))
+write.csv(summ.res, paste0("../results/", model, "_", outcome, "_rate_summ.csv"))
 
 
 }}

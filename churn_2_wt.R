@@ -3,7 +3,7 @@
 #
 # Project: How to handle churn
 #
-# Purpose: Run weighted analyses
+# Purpose: Run weighted analyses (Z not included)
 #
 # Author: Jacqueline Rudolph
 #
@@ -17,9 +17,9 @@ for (package in packages){
   suppressPackageStartupMessages(library(package, character.only=T, quietly=T)) 
 }
 
-nsim <- 500
+nsim <- 1000
 
-model <- "dag1"
+model <- "dag4.1"
 for (outcome in c("transient", "permanent", "repeated")) {
 
 
@@ -29,7 +29,7 @@ dat <- read_csv(paste0("../data/", model, "_", outcome, ".csv"))
 
 
 rep.res <- function(r) {
-  dat.r <- filter(dat, rep==r)
+  dat.r <- filter(dat, sim_rep==r)
 
 
 # True natural course -----------------------------------------------------
@@ -80,7 +80,7 @@ rep.res <- function(r) {
                         family=binomial(link="logit"), data=censor.dat)$fitted.values 
 
   censor.dat <- censor.dat %>% 
-    group_by(rep, id) %>% 
+    group_by(sim_rep, id) %>% 
     mutate(wt_us = 1/den,
            cum_wt_us = cumprod(wt_us),
            wt_s = num/den,
@@ -183,6 +183,8 @@ rep.res <- function(r) {
 all.res <- lapply(1:nsim, function(x){rep.res(x)})
 all.res <- bind_rows(all.res)
 
+write_csv(all.res, paste0("../results/", model, "/", model, "_", outcome, "_wt_all.csv"))
+
 summ.res <- all.res %>% 
   group_by(estimand, t) %>% 
   summarize(across(!rep, list(avg = ~mean(.x, na.rm=T), sd = ~sd(.x, na.rm=T)))) %>% 
@@ -192,6 +194,6 @@ summ.res <- all.res %>%
          bias_obs_wt = obs_wt_avg - truth_avg) %>% 
   ungroup()
 
-write.csv(summ.res, paste0("../results/", model, "_", outcome, "_wt.csv"))
+write_csv(summ.res, paste0("../results/", model, "/", model, "_", outcome, "_wt_summ.csv"))
 
 }

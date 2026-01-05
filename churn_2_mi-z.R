@@ -3,7 +3,7 @@
 #
 # Project: How to handle gaps
 #
-# Purpose: Run multiple imputation (Z not included)
+# Purpose: Run multiple imputation (Z included)
 #
 # Author: Jacqueline Rudolph
 #
@@ -11,10 +11,13 @@
 #
 ###########################################################################
 
+
 packages <- c("tidyverse", "survival", "broom", "zoo", "splines", "mice", "parallel")
 for (package in packages){
   suppressPackageStartupMessages(library(package, character.only=T, quietly=T))
 }
+
+cores <- 10
 
 
 # Set-up for analysis -----------------------------------------------------
@@ -24,9 +27,9 @@ M <- 50       # Number of imputations
 
 set.seed(123)
 
-model <- "dag3"
+model <- "dag4.1"
 
-for (outcome in c("transient", "permanent", "repeated")) { # "transient", "permanent", "repeated"
+for (outcome in c("permanent", "repeated")) { # "transient", "permanent", "repeated"
   
   
 # Read in data ------------------------------------------------------------
@@ -65,7 +68,7 @@ rep.res <- function(r) {
     mutate(Y_obs = ifelse(M==1, NA, Y)) # Y only observed when M==0
 
   wide <- gap.dat %>%
-    pivot_wider(id_cols=c(id, B), names_from=t, values_from=Y_obs, names_prefix="Y")
+    pivot_wider(id_cols=c(id, B), names_from=t, values_from=c(Y_obs, Z))
   
   # Fit MI
   wide.imp <- mice(select(wide, -id), m=M, maxit=50, print=F)
@@ -74,9 +77,9 @@ rep.res <- function(r) {
   imp.rep <- function(m) {
     imp.dat <- bind_cols(id=wide$id, mice::complete(wide.imp, m)) %>%
       pivot_longer(!c(id, B),
-                   names_to="t",
-                   names_prefix="Y",
-                   values_to="Y") %>%
+                   names_to = c(".value", "t"),
+                   names_pattern = "(.*)_(.*)") %>%
+      rename(Y = Y_obs) %>% 
       group_by(id) %>%
       mutate(t = as.numeric(t),
              last_t = lag(t),
@@ -128,10 +131,10 @@ rep.res <- function(r) {
   return(res)
 }
 
-sim.res <- mclapply(1:nsim, function(x){rep.res(x)}, mc.cores=15, mc.set.seed=F)
+sim.res <- mclapply(1:nsim, function(x){rep.res(x)}, mc.cores=cores, mc.set.seed=F)
 sim.res <- bind_rows(sim.res)
 
-write_csv(sim.res, paste0("../results/", model, "/", model, "_", outcome, "_mi_all.csv"))
+write_csv(sim.res, paste0("../results/", model, "/", model, "_", outcome, "_mi-z_all.csv"))
 
 summ.res <- sim.res %>% 
   group_by(estimand, t) %>% 
@@ -140,6 +143,6 @@ summ.res <- sim.res %>%
          bias_mi = mi_avg - truth_avg) %>% 
   ungroup()
 
-write_csv(summ.res, paste0("../results/", model, "/", model, "_", outcome, "_mi_summ.csv"))
+write_csv(summ.res, paste0("../results/", model, "/", model, "_", outcome, "_mi-z_summ.csv"))
 
 }
