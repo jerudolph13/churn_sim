@@ -1,4 +1,4 @@
-This repository contains code for the paper "Sampling for computational efficiency when conducting analyses in big data," In Press at the _Epidemiology_.
+This repository contains code for the paper "Sampling for computational efficiency when conducting analyses in big data," In Press at _Epidemiology_.
  
 
 CODE DESCRIPTION
