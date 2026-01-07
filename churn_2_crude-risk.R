@@ -7,7 +7,7 @@ for (package in packages){
 nsim <- 1000
 
 for (model in c("dag1", "dag2.1", "dag2.2", "dag2.3", "dag2.4",
-                "dag3", "dag3.1", "dag4", "dag4.1")) { 
+                "dag3", "dag3.1", "dag3.2", "dag3.3", "dag4", "dag4.1")) { 
 for (outcome in c("transient", "permanent", "repeated")) {
 
 
