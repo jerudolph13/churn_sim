@@ -27,7 +27,7 @@ M <- 50       # Number of imputations
 
 set.seed(123)
 
-model <- "dag4.1"
+model <- "dag4.1" #"dag1", "dag2.1", "dag2.2", "dag2.3", "dag2.4", "dag3", "dag3.1", "dag4", "dag4.1"
 
 for (outcome in c("transient", "permanent", "repeated")) { 
   
