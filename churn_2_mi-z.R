@@ -29,7 +29,7 @@ set.seed(123)
 
 model <- "dag4.1"
 
-for (outcome in c("permanent", "repeated")) { # "transient", "permanent", "repeated"
+for (outcome in c("transient", "permanent", "repeated")) { 
   
   
 # Read in data ------------------------------------------------------------
