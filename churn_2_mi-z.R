@@ -7,10 +7,12 @@
 #
 # Author: Jacqueline Rudolph
 #
-# Last Update: 09 Sep 2025
+# Last Update: 08 Jan 2026
 #
 ###########################################################################
 
+  # NOTE: Slight tweaks have been made to this code since publication. Numerical results 
+  #       differ but findings are consistent.
 
 packages <- c("tidyverse", "survival", "broom", "zoo", "splines", "mice", "parallel")
 for (package in packages){
@@ -68,10 +70,11 @@ rep.res <- function(r) {
 # Multiple imputation -----------------------------------------------------
   
   gap.dat <- dat.r %>%
-    mutate(Y_obs = ifelse(M==1, NA, Y)) # Y only observed when M==0
+    mutate(Y_obs = ifelse(M==1, NA, Y), # Y only observed when M==0
+           Z_obs = ifelse(M==1, NA, Z)) # Z is missing at missed visits
 
   wide <- gap.dat %>%
-    pivot_wider(id_cols=c(id, B), names_from=t, values_from=c(Y_obs, Z))
+    pivot_wider(id_cols=c(id, B), names_from=t, values_from=c(Y_obs, Z_obs))
   
   # Fit MI
   wide.imp <- mice(select(wide, -id), m=M, maxit=50, print=F)
@@ -82,7 +85,8 @@ rep.res <- function(r) {
       pivot_longer(!c(id, B),
                    names_to = c(".value", "t"),
                    names_pattern = "(.*)_(.*)") %>%
-      rename(Y = Y_obs) %>% 
+      rename(Y = Y_obs,
+             Z = Z_obs) %>% 
       group_by(id) %>%
       mutate(t = as.numeric(t),
              last_t = lag(t),
